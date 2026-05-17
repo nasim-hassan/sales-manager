@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sales_manager/core/models/lead_model.dart';
 import 'package:sales_manager/core/models/user_model.dart';
 import 'package:sales_manager/core/constants/app_constants.dart';
+import 'package:sales_manager/core/services/supabase_service.dart';
 
 class LeadsProvider extends ChangeNotifier {
-  final _supabase = Supabase.instance.client;
+  final _supabaseService = SupabaseService();
+  final _supabase = SupabaseService();
 
   List<LeadModel> _leads = [];
   bool _isLoading = false;
@@ -169,7 +170,7 @@ class LeadsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _supabase.from(AppConstants.leadsTable).delete().eq('id', leadId);
+      await _supabaseService.from(AppConstants.leadsTable).delete().eq('id', leadId);
 
       _leads.removeWhere((l) => l.id == leadId);
       _isLoading = false;

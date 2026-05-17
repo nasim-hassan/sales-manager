@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sales_manager/core/theme/app_theme.dart';
+import 'package:sales_manager/features/auth/providers/auth_provider.dart';
+import 'package:sales_manager/features/admin/screens/users_screen.dart';
 import 'package:sales_manager/features/leads/screens/leads_screen.dart';
 import 'package:sales_manager/features/leads/screens/proposals_screen.dart';
 import 'package:sales_manager/features/leads/screens/meetings_screen.dart';
 import 'package:sales_manager/features/leads/providers/leads_provider.dart';
 import 'package:sales_manager/features/leads/providers/proposals_provider.dart';
 import 'package:sales_manager/features/customers/screens/customers_screen.dart';
+import 'package:sales_manager/features/calendar/screens/calendar_screen.dart';
+import 'package:sales_manager/features/reports/screens/reports_screen.dart';
 import 'package:sales_manager/features/dashboard/screens/notifications_screen.dart';
 import 'package:sales_manager/features/dashboard/providers/notifications_provider.dart';
 
@@ -17,7 +21,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sales Dashboard'),
+        title: const Text('CRM Dashboard'),
         elevation: 0,
         actions: [
           Consumer<NotificationsProvider>(
@@ -65,6 +69,22 @@ class HomeScreen extends StatelessWidget {
               );
             },
           ),
+          Padding(
+            padding: const EdgeInsets.all(AppTheme.spacingMd),
+            child: Center(
+              child: Consumer<AuthProvider>(
+                builder: (context, authProvider, _) {
+                  return Text(
+                    authProvider.currentUser?.name ?? 'User',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
         ],
       ),
       drawer: const AppDrawer(),
@@ -73,20 +93,29 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Welcome to Sales Manager',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacingSm),
-            const Text(
-              'Manage your customers, leads and proposals',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppTheme.textSecondary,
-              ),
+            Consumer<AuthProvider>(
+              builder: (context, authProvider, _) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Welcome Back',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: AppTheme.spacingSm),
+                    Text(
+                      '${authProvider.currentUser?.name} (${authProvider.currentUser?.role})',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: AppTheme.spacingXl),
             const Text(
@@ -277,6 +306,40 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: AppTheme.spacingMd),
+        Row(
+          children: [
+            Expanded(
+              child: _buildQuickActionCard(
+                context,
+                icon: Icons.calendar_today,
+                title: 'Calendar',
+                subtitle: 'Schedule events',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CalendarScreen()),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: AppTheme.spacingMd),
+            Expanded(
+              child: _buildQuickActionCard(
+                context,
+                icon: Icons.show_chart,
+                title: 'Reports',
+                subtitle: 'View reports',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ReportsScreen()),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -331,28 +394,39 @@ class AppDrawer extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(color: AppTheme.primaryColor),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                CircleAvatar(
-                  backgroundColor: Colors.white,
-                  radius: 30,
-                  child: Icon(Icons.business, color: AppTheme.primaryColor),
+          Consumer<AuthProvider>(
+            builder: (context, authProvider, _) {
+              return DrawerHeader(
+                decoration: const BoxDecoration(color: AppTheme.primaryColor),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    const CircleAvatar(
+                      backgroundColor: Colors.white,
+                      radius: 30,
+                      child: Icon(Icons.person, color: AppTheme.primaryColor),
+                    ),
+                    const SizedBox(height: AppTheme.spacingMd),
+                    Text(
+                      authProvider.currentUser?.name ?? 'User',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    Text(
+                      authProvider.currentUser?.email ?? '',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: AppTheme.spacingMd),
-                Text(
-                  'Sales Manager',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
           _buildDrawerItem(
             context,
@@ -386,7 +460,84 @@ class AppDrawer extends StatelessWidget {
               );
             },
           ),
-
+          _buildDrawerItem(
+            context,
+            icon: Icons.event,
+            title: 'Meetings',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MeetingsScreen()),
+              );
+            },
+          ),
+          _buildDrawerItem(
+            context,
+            icon: Icons.calendar_today,
+            title: 'Calendar',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CalendarScreen()),
+              );
+            },
+          ),
+          _buildDrawerItem(
+            context,
+            icon: Icons.description,
+            title: 'Proposals',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProposalsScreen()),
+              );
+            },
+          ),
+          _buildDrawerItem(
+            context,
+            icon: Icons.show_chart,
+            title: 'Reports',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ReportsScreen()),
+              );
+            },
+          ),
+          Consumer<AuthProvider>(
+            builder: (context, authProvider, _) {
+              if (authProvider.currentUser?.role == 'admin' ||
+                  authProvider.currentUser?.role == 'manager') {
+                return _buildDrawerItem(
+                  context,
+                  icon: Icons.admin_panel_settings,
+                  title: 'Users',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const UsersScreen()),
+                    );
+                  },
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+          const Divider(),
+          _buildDrawerItem(
+            context,
+            icon: Icons.logout,
+            title: 'Logout',
+            onTap: () {
+              Navigator.pop(context);
+              context.read<AuthProvider>().logout();
+            },
+          ),
         ],
       ),
     );

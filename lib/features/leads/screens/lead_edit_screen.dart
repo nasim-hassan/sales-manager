@@ -4,6 +4,8 @@ import 'package:sales_manager/core/models/lead_model.dart';
 import 'package:sales_manager/features/leads/providers/leads_provider.dart';
 import 'package:sales_manager/features/leads/screens/schedule_meeting_screen.dart';
 import 'package:sales_manager/features/leads/screens/send_proposal_screen.dart';
+import 'package:sales_manager/features/auth/providers/auth_provider.dart';
+import 'package:sales_manager/features/admin/providers/users_provider.dart';
 
 class LeadEditScreen extends StatefulWidget {
   final LeadModel? lead;
@@ -50,8 +52,16 @@ class _LeadEditScreenState extends State<LeadEditScreen> {
     );
     _notesController = TextEditingController(text: widget.lead?.notes ?? '');
     _selectedStage = widget.lead?.stage ?? 'New';
-    // Set default to empty for simplicity (no user system)
-    _selectedAssignedTo = widget.lead?.assignedTo ?? '';
+    // Default to current user if creating new lead
+    final authProvider = context.read<AuthProvider>();
+    _selectedAssignedTo =
+        widget.lead?.assignedTo ?? authProvider.currentUser?.id ?? '';
+
+    // Fetch users to populate assignment dropdown
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final usersProvider = context.read<UsersProvider>();
+      usersProvider.fetchUsers();
+    });
   }
 
   @override
@@ -71,7 +81,9 @@ class _LeadEditScreenState extends State<LeadEditScreen> {
     }
 
     final leadsProvider = context.read<LeadsProvider>();
+    final authProvider = context.read<AuthProvider>();
     final value = double.tryParse(_valueController.text) ?? 0;
+    final currentUserId = authProvider.currentUser?.id ?? 'admin';
 
     if (widget.lead == null) {
       // Create new lead
@@ -83,7 +95,7 @@ class _LeadEditScreenState extends State<LeadEditScreen> {
         company: _companyController.text,
         stage: _selectedStage,
         assignedTo: _selectedAssignedTo,
-        createdBy: 'system',
+        createdBy: currentUserId,
         value: value,
         notes: _notesController.text,
         createdAt: DateTime.now(),
@@ -240,6 +252,117 @@ class _LeadEditScreenState extends State<LeadEditScreen> {
               ),
               const SizedBox(height: 16),
 
+              // Assign To Dropdown (Only for new leads)
+              if (widget.lead == null)
+                Consumer<UsersProvider>(
+                  builder: (context, usersProvider, _) {
+                    final users = usersProvider.users;
+
+                    print(
+                      '🔍 [Lead Assignment] Total users loaded: ${users.length}',
+                    );
+                    for (var user in users) {
+                      print('   - ${user.name} (${user.role})');
+                    }
+
+                    if (users.isEmpty) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.orange.shade200),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.warning,
+                                  color: Colors.orange.shade700,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'No users available. Please create users first.',
+                                    style: TextStyle(
+                                      color: Colors.orange.shade700,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    // Group users by role
+                    final Map<String, List<dynamic>> groupedUsers = {};
+                    for (var user in users) {
+                      if (!groupedUsers.containsKey(user.role)) {
+                        groupedUsers[user.role] = [];
+                      }
+                      groupedUsers[user.role]!.add(user);
+                    }
+
+                    // Build dropdown items with parent-child structure
+                    final items = <DropdownMenuItem<String>>[];
+                    for (var role in groupedUsers.keys) {
+                      // Add role header (parent)
+                      items.add(
+                        DropdownMenuItem<String>(
+                          enabled: false,
+                          value: '',
+                          child: Text(
+                            role.toUpperCase(),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      );
+
+                      // Add users under this role (children with indentation)
+                      for (var user in groupedUsers[role]!) {
+                        items.add(
+                          DropdownMenuItem<String>(
+                            value: user.id,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 24.0),
+                              child: Text(user.name),
+                            ),
+                          ),
+                        );
+                      }
+                    }
+
+                    return DropdownButtonFormField<String>(
+                      value: _selectedAssignedTo,
+                      decoration: InputDecoration(
+                        labelText: 'Assign To',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.person_add),
+                      ),
+                      items: items,
+                      onChanged: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          setState(() {
+                            _selectedAssignedTo = value;
+                          });
+                        }
+                      },
+                    );
+                  },
+                ),
+              const SizedBox(height: 16),
+
               // Lead Value
               TextFormField(
                 controller: _valueController,
@@ -357,12 +480,25 @@ class _LeadEditScreenState extends State<LeadEditScreen> {
   }
 
   Widget _buildAssignmentInfoCard() {
+    final authProvider = context.read<AuthProvider>();
+    final currentUserId = authProvider.currentUser?.id;
+    final isCreatedByCurrentUser = widget.lead?.createdBy == currentUserId;
+    final assignmentLabel = isCreatedByCurrentUser
+        ? 'Self Assigned'
+        : 'Manager/Admin Assigned';
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            const Icon(Icons.person, color: Colors.blue, size: 20),
+            Icon(
+              isCreatedByCurrentUser
+                  ? Icons.person
+                  : Icons.admin_panel_settings,
+              color: isCreatedByCurrentUser ? Colors.blue : Colors.orange,
+              size: 20,
+            ),
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,11 +508,11 @@ class _LeadEditScreenState extends State<LeadEditScreen> {
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 Text(
-                  widget.lead?.createdBy ?? 'System',
-                  style: const TextStyle(
+                  assignmentLabel,
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.blue,
+                    color: isCreatedByCurrentUser ? Colors.blue : Colors.orange,
                   ),
                 ),
               ],
@@ -388,33 +524,41 @@ class _LeadEditScreenState extends State<LeadEditScreen> {
   }
 
   Widget _buildNewLeadAssignmentCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            const Icon(Icons.person_add, color: Colors.green, size: 20),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Consumer<UsersProvider>(
+      builder: (context, usersProvider, _) {
+        final assignedUser = usersProvider.users
+            .where((u) => u.id == _selectedAssignedTo)
+            .firstOrNull;
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                const Text(
-                  'Assignment',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                Text(
-                  _selectedAssignedTo.isEmpty ? 'Unassigned' : _selectedAssignedTo,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.green,
-                  ),
+                const Icon(Icons.person_add, color: Colors.green, size: 20),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Assigned To',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    Text(
+                      assignedUser?.name ?? 'Select User',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

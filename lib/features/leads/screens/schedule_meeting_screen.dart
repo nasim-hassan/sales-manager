@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sales_manager/core/services/supabase_service.dart';
 import 'package:sales_manager/core/theme/app_theme.dart';
 import 'package:sales_manager/core/models/lead_model.dart';
 import 'package:sales_manager/core/models/meeting_model.dart';
@@ -363,7 +363,7 @@ class _ScheduleMeetingScreenState extends State<ScheduleMeetingScreen> {
 
   void _scheduleMeeting() {
     final meetingsProvider = context.read<MeetingsProvider>();
-    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+    final currentUserId = SupabaseService().auth.currentUser?.id;
 
     if (currentUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(

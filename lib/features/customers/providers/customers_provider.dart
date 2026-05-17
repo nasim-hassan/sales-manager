@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sales_manager/core/models/customer_model.dart';
 import 'package:sales_manager/core/models/user_model.dart';
 import 'package:sales_manager/core/models/lead_model.dart';
 import 'package:sales_manager/core/constants/app_constants.dart';
+import 'package:sales_manager/core/services/supabase_service.dart';
 
 class CustomersProvider extends ChangeNotifier {
-  final _supabase = Supabase.instance.client;
+  final _supabaseService = SupabaseService();
+  final _supabase = SupabaseService();
 
   List<CustomerModel> _customers = [];
   bool _isLoading = false;

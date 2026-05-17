@@ -21,7 +21,6 @@ class _EditMeetingScreenState extends State<EditMeetingScreen> {
   late String _selectedStatus;
   int _durationMinutes = 60;
 
-  final List<String> _statuses = ['scheduled', 'completed', 'cancelled'];
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -195,7 +194,7 @@ class _EditMeetingScreenState extends State<EditMeetingScreen> {
                     vertical: 12,
                   ),
                 ),
-                items: [15, 30, 60, 90, 120, 180]
+                items: {15, 30, 45, 60, 90, 120, 180, _durationMinutes}
                     .map(
                       (duration) => DropdownMenuItem(
                         value: duration,
@@ -227,12 +226,12 @@ class _EditMeetingScreenState extends State<EditMeetingScreen> {
                     vertical: 12,
                   ),
                 ),
-                items: _statuses
+                items: {'scheduled', 'completed', 'cancelled', _selectedStatus}
                     .map(
                       (status) => DropdownMenuItem(
                         value: status,
                         child: Text(
-                          status.replaceFirst(
+                          status.isEmpty ? '' : status.replaceFirst(
                             status[0],
                             status[0].toUpperCase(),
                           ),

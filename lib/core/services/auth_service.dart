@@ -1,8 +1,20 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sales_manager/core/models/user_model.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
+  
+  // Mock current user - logged in by default
+  UserModel? _currentUser = UserModel(
+    id: 'user_001',
+    email: 'nasim@salesmanager.com',
+    name: 'Nasim Hassan',
+    phone: '+880-1700-000001',
+    role: 'admin',
+    isActive: true,
+    createdBy: null,
+    reportingManager: null,
+    createdAt: DateTime(2024, 1, 1),
+  );
 
   AuthService._internal();
 
@@ -10,48 +22,34 @@ class AuthService {
     return _instance;
   }
 
-  GoTrueClient get authClient => Supabase.instance.client.auth;
-
   void initialize() {
-    try {
-      // Ensure Supabase is initialized
-      final supabase = Supabase.instance.client;
-      print(
-        '✅ AuthService initialized. Auth client available: ${supabase.auth}',
-      );
-    } catch (e) {
-      print('❌ AuthService initialization error: $e');
-    }
+    // Keep for compatibility but it's already set
+    print('✅ AuthService initialized with mock user: ${_currentUser?.name}');
   }
 
-  User? get currentUser {
-    try {
-      return Supabase.instance.client.auth.currentUser;
-    } catch (e) {
-      print('❌ CurrentUser error: $e');
-      return null;
-    }
-  }
+  UserModel? get currentUser => _currentUser;
 
-  bool get isLoggedIn => currentUser != null;
+  bool get isLoggedIn => _currentUser != null;
 
   Future<bool> login(String email, String password) async {
     try {
-      print('🔑 Attempting login for: $email');
-      final response = await authClient.signInWithPassword(
-        email: email,
-        password: password,
+      print('🔑 Mock Login attempt for: $email');
+      // Simulate login delay
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Mock users database
+      final mockUsers = _getMockUsers();
+      final user = mockUsers.firstWhere(
+        (u) => u.email == email,
+        orElse: () => throw Exception('User not found'),
       );
 
-      if (response.user != null) {
-        print('✅ Login successful for: $email');
-        return true;
-      }
-      return false;
+      _currentUser = user;
+      print('✅ Mock Login successful for: $email (${user.name})');
+      return true;
     } catch (e) {
-      print('❌ Login Error: $e');
-      print('Email: $email');
-      rethrow; // Throw error to provider so it can show to user
+      print('❌ Mock Login Error: $e');
+      rethrow;
     }
   }
 
@@ -63,42 +61,27 @@ class AuthService {
     String role,
   ) async {
     try {
-      final authResponse = await authClient.signUp(
+      print('🔑 Mock Signup for: $email, $name');
+      // Simulate signup delay
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      _currentUser = UserModel(
+        id: 'user_${DateTime.now().millisecondsSinceEpoch}',
         email: email,
-        password: password,
+        name: name,
+        phone: phone,
+        role: role,
+        isActive: true,
+        createdAt: DateTime.now(),
       );
-
-      if (authResponse.user == null) {
-        return false;
-      }
-
-      // Create user record in the users table
-      try {
-        await Supabase.instance.client.from('users').insert({
-          'id': authResponse.user!.id,
-          'email': email,
-          'name': name,
-          'phone': phone,
-          'role': role,
-          'is_active': true,
-          'created_at': DateTime.now().toIso8601String(),
-          'updated_at': DateTime.now().toIso8601String(),
-        });
-        print('✅ Signup: User record created in users table');
-        return true;
-      } catch (dbError) {
-        print('❌ Signup: Failed to create user record: $dbError');
-        return false;
-      }
+      print('✅ Mock Signup successful: $name');
+      return true;
     } catch (e) {
-      print('❌ Signup Error: $e');
+      print('❌ Mock Signup Error: $e');
       return false;
     }
   }
 
-  /// Create a new account without logging out the current user
-  /// Also creates the user record in the users table
-  /// Returns the created user ID
   Future<String> createAccount(
     String email,
     String password, {
@@ -109,96 +92,42 @@ class AuthService {
     String? reportingManager,
   }) async {
     try {
-      print('🔑 Creating account for: $email');
+      print('🔑 Mock Creating account for: $email');
+      // Simulate account creation delay
+      await Future.delayed(const Duration(milliseconds: 500));
 
-      // Use existing Supabase client instead of creating a temporary one
-      final supabase = Supabase.instance.client;
-
-      // Step 1: Create Auth account
-      final response = await supabase.auth.signUp(
+      final userId = 'user_${DateTime.now().millisecondsSinceEpoch}';
+      _currentUser = UserModel(
+        id: userId,
         email: email,
-        password: password,
+        name: name ?? email.split('@')[0],
+        phone: phone ?? '',
+        role: role ?? 'salesperson',
+        isActive: true,
+        createdBy: createdBy,
+        reportingManager: reportingManager,
+        createdAt: DateTime.now(),
       );
-
-      if (response.user != null) {
-        final userId = response.user!.id;
-        print('✅ Account created in Auth: $userId');
-
-        // Step 2: Create user record in users table
-        try {
-          await supabase.from('users').insert({
-            'id': userId,
-            'email': email,
-            'name': name ?? email.split('@')[0],
-            'phone': phone ?? '',
-            'role': role ?? 'salesperson',
-            'is_active': true,
-            'created_by': createdBy,
-            'reporting_manager': reportingManager,
-            'created_at': DateTime.now().toIso8601String(),
-            'updated_at': DateTime.now().toIso8601String(),
-          });
-          print('✅ User record created in users table: $userId');
-        } catch (dbError) {
-          print('❌ Failed to create user record: $dbError');
-          // If user record creation fails, it's a critical error
-          throw Exception(
-            'User Auth created but failed to create user record: $dbError',
-          );
-        }
-
-        return userId;
-      }
-
-      throw Exception('Supabase Auth returned no user');
+      print('✅ Mock Account created: $userId');
+      return userId;
     } catch (e) {
-      print('❌ Create Account Error: $e');
-
-      // If user already exists, try to sign in to get ID
-      if (e.toString().contains('already registered') ||
-          e.toString().contains('User already exists')) {
-        print('⚠️ User exists, attempting to fetch ID via login...');
-        try {
-          final supabase = Supabase.instance.client;
-          final loginResponse = await supabase.auth.signInWithPassword(
-            email: email,
-            password: password,
-          );
-          if (loginResponse.user != null) {
-            print('✅ Existing user found: ${loginResponse.user!.id}');
-            return loginResponse.user!.id;
-          }
-        } catch (loginError) {
-          print('❌ Login fallback failed: $loginError');
-          throw Exception(
-            'User exists but login failed: ${loginError.toString()}',
-          );
-        }
-      }
-
-      throw e; // Rethrow original error to be caught by provider
+      print('❌ Mock CreateAccount Error: $e');
+      rethrow;
     }
   }
 
   Future<UserModel?> getCurrentUserDetails() async {
-    if (!isLoggedIn) {
-      print('❌ getCurrentUserDetails: User not logged in');
+    if (_currentUser == null) {
+      print('❌ No current user to fetch details for');
       return null;
     }
 
     try {
-      final user = currentUser!;
-      print('🔍 Fetching user details for: ${user.id}');
-      final response = await Supabase.instance.client
-          .from('users')
-          .select()
-          .eq('id', user.id)
-          .single();
-
-      print('✅ User data fetched: $response');
-      final userModel = UserModel.fromJson(response);
-      print('✅ User model created: role=${userModel.role}');
-      return userModel;
+      print('🔍 Getting mock user details for: ${_currentUser?.name}');
+      // Simulate network delay
+      await Future.delayed(const Duration(milliseconds: 200));
+      print('✅ Mock user details fetched: ${_currentUser?.name}');
+      return _currentUser;
     } catch (e) {
       print('❌ GetCurrentUserDetails Error: $e');
       return null;
@@ -207,34 +136,79 @@ class AuthService {
 
   Future<void> logout() async {
     try {
-      await authClient.signOut();
-      print('✅ Logout successful');
+      print('🚪 Mock Logout');
+      _currentUser = null;
+      print('✅ Mock Logout successful');
     } catch (e) {
-      print('❌ Logout Error: $e');
+      print('❌ Mock Logout Error: $e');
     }
   }
 
   Future<bool> resetPassword(String email) async {
     try {
-      await authClient.resetPasswordForEmail(email);
+      print('🔑 Mock ResetPassword for: $email');
+      // Simulate email sending
+      await Future.delayed(const Duration(milliseconds: 500));
+      print('✅ Mock ResetPassword email sent to: $email');
       return true;
     } catch (e) {
-      print('❌ ResetPassword Error: $e');
+      print('❌ Mock ResetPassword Error: $e');
       return false;
     }
   }
 
   Future<bool> updatePassword(String newPassword) async {
     try {
-      await authClient.updateUser(UserAttributes(password: newPassword));
+      print('🔑 Mock UpdatePassword');
+      // Simulate password update
+      await Future.delayed(const Duration(milliseconds: 500));
+      print('✅ Mock Password updated');
       return true;
     } catch (e) {
-      print('❌ UpdatePassword Error: $e');
+      print('❌ Mock UpdatePassword Error: $e');
       return false;
     }
   }
 
-  Stream<AuthState> onAuthStateChanged() {
-    return authClient.onAuthStateChange;
+  // Mock users database
+  List<UserModel> _getMockUsers() {
+    return [
+      UserModel(
+        id: 'user_001',
+        email: 'nasim@salesmanager.com',
+        name: 'Nasim Hassan',
+        phone: '+880-1700-000001',
+        role: 'admin',
+        isActive: true,
+        createdAt: DateTime(2024, 1, 1),
+      ),
+      UserModel(
+        id: 'user_002',
+        email: 'ramim@salesmanager.com',
+        name: 'Ramim Rashid',
+        phone: '+880-1700-000002',
+        role: 'manager',
+        isActive: true,
+        createdAt: DateTime(2024, 1, 5),
+      ),
+      UserModel(
+        id: 'user_003',
+        email: 'emon@salesmanager.com',
+        name: 'Emon Khan',
+        phone: '+880-1700-000003',
+        role: 'salesperson',
+        isActive: true,
+        createdAt: DateTime(2024, 1, 10),
+      ),
+      UserModel(
+        id: 'user_004',
+        email: 'lamia@salesmanager.com',
+        name: 'Lamia Akter',
+        phone: '+880-1700-000004',
+        role: 'salesperson',
+        isActive: true,
+        createdAt: DateTime(2024, 1, 15),
+      ),
+    ];
   }
 }
