@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sales_manager/core/theme/app_theme.dart';
-import 'package:sales_manager/features/leads/providers/proposals_provider.dart';
-import 'package:sales_manager/features/leads/screens/proposal_edit_screen.dart';
+import 'package:customer_relationship_management/core/theme/app_theme.dart';
+import 'package:customer_relationship_management/features/leads/providers/proposals_provider.dart';
+import 'package:customer_relationship_management/features/leads/screens/proposal_edit_screen.dart';
 
 class ProposalsScreen extends StatefulWidget {
   const ProposalsScreen({super.key});

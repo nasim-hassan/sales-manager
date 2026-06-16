@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sales_manager/core/services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ReportsProvider extends ChangeNotifier {
-  final _supabaseService = SupabaseService();
-  final _supabase = SupabaseService();
+  final _supabase = Supabase.instance.client;
 
   bool _isLoading = false;
   String? _error;
@@ -189,8 +188,8 @@ class ReportsProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      final usersResponse = await _supabaseService.from('users').select();
-      final leadsResponse = await _supabaseService.from('leads').select();
+      final usersResponse = await _supabase.from('users').select();
+      final leadsResponse = await _supabase.from('leads').select();
 
       final userPerformance = <String, Map<String, dynamic>>{};
 

@@ -1,27 +1,13 @@
 import 'dart:io';
 import 'dart:typed_data';
-
-class FileObject {
-  final String name;
-  final String id;
-  final DateTime createdAt;
-  final int size;
-
-  FileObject({
-    required this.name,
-    required this.id,
-    required this.createdAt,
-    required this.size,
-  });
-}
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class StorageService {
-  // Mock in-memory file storage
-  static final Map<String, List<Map<String, dynamic>>> _mockBuckets = {};
+  final _supabase = Supabase.instance.client;
 
   static const String proposalBucket = 'proposal-attachments';
 
-  /// Upload a file (mock version)
+  /// Upload a file to Supabase Storage from File (mobile)
   Future<String?> uploadFile({
     required File file,
     required String bucketName,
@@ -32,20 +18,14 @@ class StorageService {
           '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
       final filePath = '$folderPath/$fileName';
 
-      // Simulate file upload
-      await Future.delayed(const Duration(milliseconds: 300));
-      _mockBuckets.putIfAbsent(bucketName, () => []);
-      _mockBuckets[bucketName]!.add({
-        'path': filePath,
-        'size': await file.length(),
-        'createdAt': DateTime.now().toIso8601String(),
-      });
+      await _supabase.storage.from(bucketName).upload(filePath, file);
 
-      // Return mock public URL
-      final publicUrl =
-          'https://mock-storage.local/$bucketName/$filePath';
+      // Get the public URL
+      final publicUrl = _supabase.storage
+          .from(bucketName)
+          .getPublicUrl(filePath);
 
-      print('✅ Mock file uploaded: $filePath');
+      print('✅ File uploaded: $filePath');
       return publicUrl;
     } catch (e) {
       print('❌ Error uploading file: $e');
@@ -53,7 +33,7 @@ class StorageService {
     }
   }
 
-  /// Upload a file from bytes (web support)
+  /// Upload a file to Supabase Storage from bytes (web support)
   Future<String?> uploadFileFromBytes({
     required List<int> fileBytes,
     required String fileName,
@@ -64,20 +44,19 @@ class StorageService {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final filePath = '$folderPath/${timestamp}_$fileName';
 
-      // Simulate file upload
-      await Future.delayed(const Duration(milliseconds: 300));
-      _mockBuckets.putIfAbsent(bucketName, () => []);
-      _mockBuckets[bucketName]!.add({
-        'path': filePath,
-        'size': fileBytes.length,
-        'createdAt': DateTime.now().toIso8601String(),
-      });
+      // Convert List<int> to Uint8List
+      final uint8List = Uint8List.fromList(fileBytes);
 
-      // Return mock public URL
-      final publicUrl =
-          'https://mock-storage.local/$bucketName/$filePath';
+      await _supabase.storage
+          .from(bucketName)
+          .uploadBinary(filePath, uint8List);
 
-      print('✅ Mock file uploaded: $filePath');
+      // Get the public URL
+      final publicUrl = _supabase.storage
+          .from(bucketName)
+          .getPublicUrl(filePath);
+
+      print('✅ File uploaded: $filePath');
       return publicUrl;
     } catch (e) {
       print('❌ Error uploading file: $e');
@@ -85,35 +64,31 @@ class StorageService {
     }
   }
 
-  /// Download a file (mock version)
+  /// Download a file from Supabase Storage
   Future<List<int>?> downloadFile({
     required String bucketName,
     required String filePath,
   }) async {
     try {
-      // Simulate file download
-      await Future.delayed(const Duration(milliseconds: 200));
-      print('✅ Mock file downloaded: $filePath');
-      return Uint8List.fromList([]);
+      final data = await _supabase.storage.from(bucketName).download(filePath);
+
+      print('✅ File downloaded: $filePath');
+      return data;
     } catch (e) {
       print('❌ Error downloading file: $e');
       return null;
     }
   }
 
-  /// Delete a file (mock version)
+  /// Delete a file from Supabase Storage
   Future<bool> deleteFile({
     required String bucketName,
     required String filePath,
   }) async {
     try {
-      // Simulate file deletion
-      await Future.delayed(const Duration(milliseconds: 200));
-      if (_mockBuckets.containsKey(bucketName)) {
-        _mockBuckets[bucketName]!
-            .removeWhere((f) => f['path'] == filePath);
-      }
-      print('✅ Mock file deleted: $filePath');
+      await _supabase.storage.from(bucketName).remove([filePath]);
+
+      print('✅ File deleted: $filePath');
       return true;
     } catch (e) {
       print('❌ Error deleting file: $e');
@@ -121,30 +96,17 @@ class StorageService {
     }
   }
 
-  /// List files in a bucket folder (mock version)
+  /// List files in a bucket folder
   Future<List<FileObject>> listFiles({
     required String bucketName,
     required String folderPath,
   }) async {
     try {
-      // Simulate listing files
-      await Future.delayed(const Duration(milliseconds: 200));
-      if (!_mockBuckets.containsKey(bucketName)) {
-        return [];
-      }
+      final files = await _supabase.storage
+          .from(bucketName)
+          .list(path: folderPath);
 
-      final files = _mockBuckets[bucketName]!
-          .where((f) =>
-              (f['path'] as String).startsWith(folderPath))
-          .map((f) => FileObject(
-                name: (f['path'] as String).split('/').last,
-                id: f['path'],
-                createdAt: DateTime.parse(f['createdAt'] as String),
-                size: f['size'] as int,
-              ))
-          .toList();
-
-      print('✅ Mock listed files in $folderPath');
+      print('✅ Listed files in $folderPath');
       return files;
     } catch (e) {
       print('❌ Error listing files: $e');
@@ -152,18 +114,20 @@ class StorageService {
     }
   }
 
-  /// Get public URL for a file (mock version)
+  /// Get public URL for a file
   String getPublicUrl({required String bucketName, required String filePath}) {
-    return 'https://mock-storage.local/$bucketName/$filePath';
+    return _supabase.storage.from(bucketName).getPublicUrl(filePath);
   }
 
   /// Check if bucket exists, if not create it
   Future<void> ensureBucketExists(String bucketName) async {
     try {
-      _mockBuckets.putIfAbsent(bucketName, () => []);
-      print('✅ Mock bucket ready: $bucketName');
+      await _supabase.storage.getBucket(bucketName);
+      print('✅ Bucket exists: $bucketName');
     } catch (e) {
-      print('⚠️ Error with mock bucket: $bucketName');
+      print('⚠️ Bucket not found, attempting to create: $bucketName');
+      // Note: Creating buckets from client requires admin privileges
+      // This should be done from Supabase dashboard or backend
     }
   }
 }

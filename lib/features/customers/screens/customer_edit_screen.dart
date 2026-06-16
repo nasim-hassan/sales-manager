@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sales_manager/core/models/customer_model.dart';
-import 'package:sales_manager/features/customers/providers/customers_provider.dart';
+import 'package:customer_relationship_management/core/models/customer_model.dart';
+import 'package:customer_relationship_management/features/customers/providers/customers_provider.dart';
 
 class CustomerEditScreen extends StatefulWidget {
   final CustomerModel? customer;

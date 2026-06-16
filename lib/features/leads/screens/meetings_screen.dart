@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:sales_manager/core/theme/app_theme.dart';
-import 'package:sales_manager/features/leads/providers/meetings_provider.dart';
-import 'package:sales_manager/features/leads/screens/edit_meeting_screen.dart';
+import 'package:customer_relationship_management/core/theme/app_theme.dart';
+import 'package:customer_relationship_management/features/leads/providers/meetings_provider.dart';
+import 'package:customer_relationship_management/features/leads/screens/edit_meeting_screen.dart';
 
 class MeetingsScreen extends StatefulWidget {
   const MeetingsScreen({super.key});

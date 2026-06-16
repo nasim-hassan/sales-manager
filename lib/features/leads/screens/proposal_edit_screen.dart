@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
-import 'package:sales_manager/core/theme/app_theme.dart';
-import 'package:sales_manager/core/models/proposal_model.dart';
-import 'package:sales_manager/features/leads/providers/proposals_provider.dart';
+import 'package:customer_relationship_management/core/theme/app_theme.dart';
+import 'package:customer_relationship_management/core/models/proposal_model.dart';
+import 'package:customer_relationship_management/features/leads/providers/proposals_provider.dart';
 
 class ProposalEditScreen extends StatefulWidget {
   final ProposalModel proposal;

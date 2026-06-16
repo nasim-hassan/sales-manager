@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sales_manager/core/theme/app_theme.dart';
-import 'package:sales_manager/features/auth/providers/auth_provider.dart';
-import 'package:sales_manager/features/admin/screens/users_screen.dart';
-import 'package:sales_manager/features/leads/screens/leads_screen.dart';
-import 'package:sales_manager/features/leads/screens/proposals_screen.dart';
-import 'package:sales_manager/features/leads/screens/meetings_screen.dart';
-import 'package:sales_manager/features/leads/providers/leads_provider.dart';
-import 'package:sales_manager/features/leads/providers/proposals_provider.dart';
-import 'package:sales_manager/features/customers/screens/customers_screen.dart';
-import 'package:sales_manager/features/calendar/screens/calendar_screen.dart';
-import 'package:sales_manager/features/reports/screens/reports_screen.dart';
-import 'package:sales_manager/features/dashboard/screens/notifications_screen.dart';
-import 'package:sales_manager/features/dashboard/providers/notifications_provider.dart';
+import 'package:customer_relationship_management/core/theme/app_theme.dart';
+import 'package:customer_relationship_management/features/auth/providers/auth_provider.dart';
+import 'package:customer_relationship_management/features/admin/screens/users_screen.dart';
+import 'package:customer_relationship_management/features/leads/screens/leads_screen.dart';
+import 'package:customer_relationship_management/features/leads/screens/proposals_screen.dart';
+import 'package:customer_relationship_management/features/leads/screens/meetings_screen.dart';
+import 'package:customer_relationship_management/features/leads/providers/leads_provider.dart';
+import 'package:customer_relationship_management/features/leads/providers/proposals_provider.dart';
+import 'package:customer_relationship_management/features/customers/screens/customers_screen.dart';
+import 'package:customer_relationship_management/features/calendar/screens/calendar_screen.dart';
+import 'package:customer_relationship_management/features/reports/screens/reports_screen.dart';
+import 'package:customer_relationship_management/features/dashboard/screens/notifications_screen.dart';
+import 'package:customer_relationship_management/features/dashboard/providers/notifications_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CRM Dashboard'),
+        title: const Text('Sales Manager Dashboard'),
         elevation: 0,
         actions: [
           Consumer<NotificationsProvider>(

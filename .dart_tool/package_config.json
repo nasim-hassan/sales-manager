@@ -644,7 +644,7 @@
       "languageVersion": "3.0"
     },
     {
-      "name": "sales_manager",
+      "name": "customer_relationship_management",
       "rootUri": "../",
       "packageUri": "lib/",
       "languageVersion": "3.9"

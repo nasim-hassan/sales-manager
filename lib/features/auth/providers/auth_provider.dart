@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sales_manager/core/services/auth_service.dart';
-import 'package:sales_manager/core/models/user_model.dart';
+import 'package:customer_relationship_management/core/services/auth_service.dart';
+import 'package:customer_relationship_management/core/models/user_model.dart';
 
 class AuthProvider extends ChangeNotifier {
   final _authService = AuthService();
@@ -8,10 +8,6 @@ class AuthProvider extends ChangeNotifier {
   UserModel? _currentUser;
   bool _isLoading = false;
   String? _error;
-
-  AuthProvider() {
-    _currentUser = _authService.currentUser;
-  }
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;

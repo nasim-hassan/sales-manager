@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sales_manager/core/theme/app_theme.dart';
-import 'package:sales_manager/core/constants/role_permissions.dart';
-import 'package:sales_manager/features/auth/providers/auth_provider.dart';
-import 'package:sales_manager/features/admin/providers/user_management_provider.dart';
+import 'package:customer_relationship_management/core/theme/app_theme.dart';
+import 'package:customer_relationship_management/core/constants/role_permissions.dart';
+import 'package:customer_relationship_management/features/auth/providers/auth_provider.dart';
+import 'package:customer_relationship_management/features/admin/providers/user_management_provider.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});

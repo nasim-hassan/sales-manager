@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:sales_manager/core/models/notification_model.dart';
-import 'package:sales_manager/core/constants/app_constants.dart';
-import 'package:sales_manager/core/services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:customer_relationship_management/core/models/notification_model.dart';
+import 'package:customer_relationship_management/core/constants/app_constants.dart';
 
 class NotificationsProvider extends ChangeNotifier {
-  final _supabaseService = SupabaseService();
-  final _supabase = SupabaseService();
+  final _supabase = Supabase.instance.client;
 
   List<NotificationModel> _notifications = [];
   bool _isLoading = false;
@@ -37,7 +36,7 @@ class NotificationsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final userId = _supabaseService.auth.currentUser?.id;
+      final userId = _supabase.auth.currentUser?.id;
       if (userId == null) {
         _error = 'User not authenticated';
         _isLoading = false;
@@ -68,7 +67,7 @@ class NotificationsProvider extends ChangeNotifier {
 
   /// Setup real-time subscription for new notifications
   void _setupRealtimeSubscription() {
-    final userId = _supabaseService.auth.currentUser?.id;
+    final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
 
     // Remove existing subscription if any
@@ -124,7 +123,7 @@ class NotificationsProvider extends ChangeNotifier {
   /// Mark all notifications as read
   Future<bool> markAllAsRead() async {
     try {
-      final userId = _supabaseService.auth.currentUser?.id;
+      final userId = _supabase.auth.currentUser?.id;
       if (userId == null) return false;
 
       await _supabase
@@ -169,7 +168,7 @@ class NotificationsProvider extends ChangeNotifier {
   /// Delete all notifications
   Future<bool> deleteAllNotifications() async {
     try {
-      final userId = _supabaseService.auth.currentUser?.id;
+      final userId = _supabase.auth.currentUser?.id;
       if (userId == null) return false;
 
       await _supabase

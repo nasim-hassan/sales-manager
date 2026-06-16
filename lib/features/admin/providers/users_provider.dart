@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:sales_manager/core/models/user_model.dart';
-import 'package:sales_manager/core/constants/app_constants.dart';
-import 'package:sales_manager/core/services/auth_service.dart';
-import 'package:sales_manager/core/services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:customer_relationship_management/core/models/user_model.dart';
+import 'package:customer_relationship_management/core/constants/app_constants.dart';
+
+import 'package:customer_relationship_management/core/services/auth_service.dart';
 
 class UsersProvider extends ChangeNotifier {
-  final _supabaseService = SupabaseService();
-  final _supabase = SupabaseService();
+  final _supabase = Supabase.instance.client;
 
   List<UserModel> _users = [];
   bool _isLoading = false;
@@ -168,7 +168,7 @@ class UsersProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _supabaseService.from(AppConstants.usersTable).delete().eq('id', userId);
+      await _supabase.from(AppConstants.usersTable).delete().eq('id', userId);
 
       _users.removeWhere((u) => u.id == userId);
       _isLoading = false;

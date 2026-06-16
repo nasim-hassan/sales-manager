@@ -1,10 +1,10 @@
 {
   "roots": [
-    "sales_manager"
+    "customer_relationship_management"
   ],
   "packages": [
     {
-      "name": "sales_manager",
+      "name": "customer_relationship_management",
       "version": "1.0.0+1",
       "dependencies": [
         "connectivity_plus",

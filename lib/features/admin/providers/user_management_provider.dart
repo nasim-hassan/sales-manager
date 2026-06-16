@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sales_manager/core/services/supabase_service.dart';
-import 'package:sales_manager/core/services/auth_service.dart';
-import 'package:sales_manager/core/models/user_model.dart';
+import 'package:customer_relationship_management/core/services/supabase_service.dart';
+import 'package:customer_relationship_management/core/services/auth_service.dart';
+import 'package:customer_relationship_management/core/models/user_model.dart';
 
 class UserManagementProvider extends ChangeNotifier {
   final _supabaseService = SupabaseService();

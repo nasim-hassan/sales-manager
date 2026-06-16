@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:sales_manager/core/services/supabase_service.dart';
-import 'package:sales_manager/core/theme/app_theme.dart';
-import 'package:sales_manager/core/models/lead_model.dart';
-import 'package:sales_manager/core/models/proposal_model.dart';
-import 'package:sales_manager/features/leads/providers/proposals_provider.dart';
+
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:customer_relationship_management/core/theme/app_theme.dart';
+import 'package:customer_relationship_management/core/models/lead_model.dart';
+import 'package:customer_relationship_management/core/models/proposal_model.dart';
+import 'package:customer_relationship_management/features/leads/providers/proposals_provider.dart';
 
 class SendProposalScreen extends StatefulWidget {
   final LeadModel lead;
@@ -331,7 +332,7 @@ class _SendProposalScreenState extends State<SendProposalScreen> {
     }
 
     final proposalsProvider = context.read<ProposalsProvider>();
-    final currentUserId = SupabaseService().auth.currentUser?.id;
+    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
 
     if (currentUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(

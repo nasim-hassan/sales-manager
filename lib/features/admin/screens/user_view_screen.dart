@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sales_manager/core/theme/app_theme.dart';
-import 'package:sales_manager/features/admin/providers/users_provider.dart';
-import 'package:sales_manager/features/admin/screens/user_edit_screen.dart';
+import 'package:customer_relationship_management/core/theme/app_theme.dart';
+import 'package:customer_relationship_management/features/admin/providers/users_provider.dart';
+import 'package:customer_relationship_management/features/admin/screens/user_edit_screen.dart';
 
 class UserViewScreen extends StatefulWidget {
   final String userId;

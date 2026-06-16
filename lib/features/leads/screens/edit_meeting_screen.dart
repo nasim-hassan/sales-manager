@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:sales_manager/core/models/meeting_model.dart';
-import 'package:sales_manager/features/leads/providers/meetings_provider.dart';
+import 'package:customer_relationship_management/core/models/meeting_model.dart';
+import 'package:customer_relationship_management/features/leads/providers/meetings_provider.dart';
 
 class EditMeetingScreen extends StatefulWidget {
   final MeetingModel meeting;
@@ -21,6 +21,7 @@ class _EditMeetingScreenState extends State<EditMeetingScreen> {
   late String _selectedStatus;
   int _durationMinutes = 60;
 
+  final List<String> _statuses = ['scheduled', 'completed', 'cancelled'];
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -194,7 +195,7 @@ class _EditMeetingScreenState extends State<EditMeetingScreen> {
                     vertical: 12,
                   ),
                 ),
-                items: {15, 30, 45, 60, 90, 120, 180, _durationMinutes}
+                items: [15, 30, 60, 90, 120, 180]
                     .map(
                       (duration) => DropdownMenuItem(
                         value: duration,
@@ -226,12 +227,12 @@ class _EditMeetingScreenState extends State<EditMeetingScreen> {
                     vertical: 12,
                   ),
                 ),
-                items: {'scheduled', 'completed', 'cancelled', _selectedStatus}
+                items: _statuses
                     .map(
                       (status) => DropdownMenuItem(
                         value: status,
                         child: Text(
-                          status.isEmpty ? '' : status.replaceFirst(
+                          status.replaceFirst(
                             status[0],
                             status[0].toUpperCase(),
                           ),

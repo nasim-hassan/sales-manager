@@ -7,9 +7,9 @@ class AppConstants {
   static const String defaultAdminEmail = 'nasimhassannahid@gmail.com';
 
   // Supabase Config (REPLACE WITH YOUR ACTUAL CREDENTIALS)
-  static const String supabaseUrl = 'https://vmavqknhtkdxexqlofrw.supabase.co';
+  static const String supabaseUrl = 'https://pcaaxleezlowixvkupai.supabase.co';
   static const String supabaseKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtYXZxa25odGtkeGV4cWxvZnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwMjMzMDMsImV4cCI6MjA4MzU5OTMwM30.bhvqIKgAlCDl_Ch-xM9MOWFCgFeWcQ53OiakAOE7A54';
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjYWF4bGVlemxvd2l4dmt1cGFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjI4NTIsImV4cCI6MjA5NzE5ODg1Mn0.pcNpngP-g4qmqHUu96KBKF1207BnxVcfbBloLpwHNkc';
 
   // Timeouts
   static const Duration apiTimeout = Duration(seconds: 30);

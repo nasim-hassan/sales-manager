@@ -1,6 +1,6 @@
 {
-    "name": "sales_manager",
-    "short_name": "sales_manager",
+    "name": "customer_relationship_management",
+    "short_name": "customer_relationship_management",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

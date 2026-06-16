@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sales_manager/core/theme/app_theme.dart';
-import 'package:sales_manager/features/leads/providers/leads_provider.dart';
-import 'package:sales_manager/features/leads/screens/lead_edit_screen.dart';
+import 'package:customer_relationship_management/core/theme/app_theme.dart';
+import 'package:customer_relationship_management/features/leads/providers/leads_provider.dart';
+import 'package:customer_relationship_management/features/leads/screens/lead_edit_screen.dart';
 
 class LeadsScreen extends StatefulWidget {
   const LeadsScreen({super.key});

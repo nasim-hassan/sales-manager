@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sales_manager/core/theme/app_theme.dart';
-import 'package:sales_manager/features/leads/providers/leads_provider.dart';
-import 'package:sales_manager/features/leads/providers/proposals_provider.dart';
-import 'package:sales_manager/features/leads/providers/meetings_provider.dart';
+import 'package:customer_relationship_management/core/theme/app_theme.dart';
+import 'package:customer_relationship_management/features/leads/providers/leads_provider.dart';
+import 'package:customer_relationship_management/features/leads/providers/proposals_provider.dart';
+import 'package:customer_relationship_management/features/leads/providers/meetings_provider.dart';
 
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});
@@ -11,7 +11,7 @@ class ReportsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('CRM Reports'), elevation: 0),
+      appBar: AppBar(title: const Text('Sales Manager Reports'), elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppTheme.spacingMd),
         child: Column(

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sales_manager/core/models/lead_model.dart';
-import 'package:sales_manager/features/leads/providers/leads_provider.dart';
-import 'package:sales_manager/features/leads/screens/schedule_meeting_screen.dart';
-import 'package:sales_manager/features/leads/screens/send_proposal_screen.dart';
-import 'package:sales_manager/features/auth/providers/auth_provider.dart';
-import 'package:sales_manager/features/admin/providers/users_provider.dart';
+import 'package:customer_relationship_management/core/models/lead_model.dart';
+import 'package:customer_relationship_management/features/leads/providers/leads_provider.dart';
+import 'package:customer_relationship_management/features/leads/screens/schedule_meeting_screen.dart';
+import 'package:customer_relationship_management/features/leads/screens/send_proposal_screen.dart';
+import 'package:customer_relationship_management/features/auth/providers/auth_provider.dart';
+import 'package:customer_relationship_management/features/admin/providers/users_provider.dart';
 
 class LeadEditScreen extends StatefulWidget {
   final LeadModel? lead;
