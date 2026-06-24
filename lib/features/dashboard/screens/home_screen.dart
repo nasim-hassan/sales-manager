@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:customer_relationship_management/core/theme/app_theme.dart';
 import 'package:customer_relationship_management/features/auth/providers/auth_provider.dart';
 import 'package:customer_relationship_management/features/admin/screens/users_screen.dart';
@@ -7,7 +8,6 @@ import 'package:customer_relationship_management/features/leads/screens/leads_sc
 import 'package:customer_relationship_management/features/leads/screens/proposals_screen.dart';
 import 'package:customer_relationship_management/features/leads/screens/meetings_screen.dart';
 import 'package:customer_relationship_management/features/leads/providers/leads_provider.dart';
-import 'package:customer_relationship_management/features/leads/providers/proposals_provider.dart';
 import 'package:customer_relationship_management/features/customers/screens/customers_screen.dart';
 import 'package:customer_relationship_management/features/calendar/screens/calendar_screen.dart';
 import 'package:customer_relationship_management/features/reports/screens/reports_screen.dart';
@@ -21,51 +21,27 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sales Manager Dashboard'),
+        title: const Text('Dashboard'),
+        centerTitle: false,
         elevation: 0,
         actions: [
           Consumer<NotificationsProvider>(
             builder: (context, notificationsProvider, _) {
               final unreadCount = notificationsProvider.unreadCount;
-              return Stack(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.notifications),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const NotificationsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  if (unreadCount > 0)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 20,
-                          minHeight: 20,
-                        ),
-                        child: Text(
-                          unreadCount > 9 ? '9+' : '$unreadCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
+              return IconButton(
+                icon: Badge(
+                  isLabelVisible: unreadCount > 0,
+                  label: Text(unreadCount > 9 ? '9+' : '$unreadCount'),
+                  child: const Icon(Icons.notifications),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationsScreen(),
                     ),
-                ],
+                  );
+                },
               );
             },
           ),
@@ -93,55 +69,28 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Consumer<AuthProvider>(
-              builder: (context, authProvider, _) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Welcome Back',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: AppTheme.spacingSm),
-                    Text(
-                      '${authProvider.currentUser?.name} (${authProvider.currentUser?.role})',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: AppTheme.spacingXl),
             const Text(
               'Key Statistics',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: AppTheme.spacingMd),
+            const SizedBox(height: AppTheme.spacingSm),
             Consumer<LeadsProvider>(
               builder: (buildContext, leadsProvider, _) {
-                return Consumer<ProposalsProvider>(
-                  builder: (buildContext, proposalsProvider, _) {
-                    return _buildStatisticsGrid(
-                      buildContext,
-                      leadsProvider,
-                      proposalsProvider,
-                    );
-                  },
-                );
+                return _buildLeadsLineChart(leadsProvider);
               },
             ),
-            const SizedBox(height: AppTheme.spacingXl),
+            const SizedBox(height: AppTheme.spacingSm),
+            Consumer<LeadsProvider>(
+              builder: (buildContext, leadsProvider, _) {
+                return _buildLeadsStageDonutChart(leadsProvider);
+              },
+            ),
+            const SizedBox(height: AppTheme.spacingSm),
             const Text(
               'Quick Actions',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: AppTheme.spacingMd),
+            const SizedBox(height: AppTheme.spacingSm),
             _buildQuickActionsGrid(context),
           ],
         ),
@@ -149,88 +98,264 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatisticsGrid(
-    BuildContext context,
-    LeadsProvider leadsProvider,
-    ProposalsProvider proposalsProvider,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatisticCard(
-            title: 'Leads',
-            count: leadsProvider.leads.length.toString(),
-            icon: Icons.trending_up,
-            color: Colors.blue,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LeadsScreen()),
-              );
-            },
-          ),
+  Widget _buildLeadsLineChart(LeadsProvider leadsProvider) {
+    // Get leads from the last 30 days
+    final now = DateTime.now();
+    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+    
+    // Group leads by day
+    final Map<DateTime, int> leadsPerDay = {};
+    for (var lead in leadsProvider.leads) {
+      if (lead.createdAt.isAfter(thirtyDaysAgo)) {
+        final dateOnly = DateTime(lead.createdAt.year, lead.createdAt.month, lead.createdAt.day);
+        leadsPerDay[dateOnly] = (leadsPerDay[dateOnly] ?? 0) + 1;
+      }
+    }
+    
+    // Create sorted list of last 30 days
+    final List<FlSpot> spots = [];
+    for (int i = 0; i < 30; i++) {
+      final date = thirtyDaysAgo.add(Duration(days: i));
+      final dateOnly = DateTime(date.year, date.month, date.day);
+      final count = leadsPerDay[dateOnly]?.toDouble() ?? 0;
+      spots.add(FlSpot(i.toDouble(), count));
+    }
+    
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(AppTheme.spacingSm),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Leads Onboard Last Month',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: AppTheme.spacingSm),
+            SizedBox(
+              height: 150,
+              child: LineChart(
+                LineChartData(
+                  gridData: const FlGridData(show: false),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 22,
+                        interval: 5,
+                        getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+                          if (index < 0 || index >= 30) return const SizedBox.shrink();
+                          if (index % 5 != 0 && index != 29) return const SizedBox.shrink();
+                          final date = thirtyDaysAgo.add(Duration(days: index));
+                          return SideTitleWidget(
+                            axisSide: meta.axisSide,
+                            space: 4,
+                            child: Text(
+                              '${date.day}/${date.month}',
+                              style: const TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 9,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    rightTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 32,
+                        interval: 1,
+                        getTitlesWidget: (value, meta) {
+                          if (value % 1 != 0) return const SizedBox.shrink();
+                          return SideTitleWidget(
+                            axisSide: meta.axisSide,
+                            space: 10,
+                            child: Text(
+                              value.toInt().toString(),
+                              style: const TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 9,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    leftTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: true,
+                      color: AppTheme.primaryColor,
+                      barWidth: 3,
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.primaryColor.withValues(alpha: 0.2),
+                            AppTheme.primaryColor.withValues(alpha: 0.0),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: AppTheme.spacingMd),
-        Expanded(
-          child: _buildStatisticCard(
-            title: 'Proposals',
-            count: proposalsProvider.proposals.length.toString(),
-            icon: Icons.description,
-            color: Colors.orange,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ProposalsScreen()),
-              );
-            },
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildStatisticCard({
-    required String title,
-    required String count,
-    required IconData icon,
-    required Color color,
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
+  Widget _buildLeadsStageDonutChart(LeadsProvider leadsProvider) {
+    // Count leads by stage
+    final Map<String, int> stageCounts = {};
+    final stages = ['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
+    
+    for (var stage in stages) {
+      stageCounts[stage] = leadsProvider.leads.where((lead) => lead.stage == stage).length;
+    }
+    
+    // Filter out stages with 0 leads
+    final filteredStages = stageCounts.entries.where((e) => e.value > 0).toList();
+    
+    if (filteredStages.isEmpty) {
+      return Card(
         elevation: 2,
         child: Padding(
-          padding: const EdgeInsets.all(AppTheme.spacingMd),
+          padding: const EdgeInsets.all(AppTheme.spacingSm),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(AppTheme.spacingSm),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(height: AppTheme.spacingMd),
-              Text(
-                count,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              const Text('Lead Stages', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
               const SizedBox(height: AppTheme.spacingSm),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.textSecondary,
-                ),
-              ),
+              const SizedBox(height: 150, child: Center(child: Text('No leads yet'))),
             ],
           ),
+        ),
+      );
+    }
+    
+    final colors = [Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.red, Colors.teal, Colors.pink];
+    
+    Widget buildLegendItem(MapEntry<String, int> stage, Color color) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                stage.key,
+                style: const TextStyle(fontSize: 11),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '${stage.value}',
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(AppTheme.spacingSm),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Lead Stages', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            const SizedBox(height: AppTheme.spacingSm),
+            Row(
+              children: [
+                Expanded(
+                  flex: 4,
+                  child: SizedBox(
+                    height: 150,
+                    child: PieChart(
+                      PieChartData(
+                        centerSpaceRadius: 52,
+                        sectionsSpace: 2,
+                        sections: List.generate(filteredStages.length, (index) {
+                          final stage = filteredStages[index];
+                          return PieChartSectionData(
+                            value: stage.value.toDouble(),
+                            radius: 14,
+                            showTitle: false,
+                            color: colors[index % colors.length],
+                          );
+                        }),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spacingLg),
+                Expanded(
+                  flex: 6,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: List.generate(
+                            filteredStages.length > 4 ? 4 : filteredStages.length,
+                            (index) {
+                              final stage = filteredStages[index];
+                              return buildLegendItem(stage, colors[index % colors.length]);
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppTheme.spacingMd),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: List.generate(
+                            filteredStages.length > 4 ? filteredStages.length - 4 : 0,
+                            (index) {
+                              final realIndex = index + 4;
+                              final stage = filteredStages[realIndex];
+                              return buildLegendItem(stage, colors[realIndex % colors.length]);
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
