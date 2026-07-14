@@ -185,7 +185,7 @@ class _EditMeetingScreenState extends State<EditMeetingScreen> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<int>(
-                value: _durationMinutes,
+                initialValue: _durationMinutes,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -217,7 +217,7 @@ class _EditMeetingScreenState extends State<EditMeetingScreen> {
               Text('Status', style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _selectedStatus,
+                initialValue: _selectedStatus,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),

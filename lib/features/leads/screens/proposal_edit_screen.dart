@@ -278,7 +278,7 @@ class _ProposalEditScreenState extends State<ProposalEditScreen> {
 
                 // Status Dropdown
                 DropdownButtonFormField<String>(
-                  value: _selectedStatus,
+                  initialValue: _selectedStatus,
                   decoration: InputDecoration(
                     labelText: 'Status',
                     border: OutlineInputBorder(

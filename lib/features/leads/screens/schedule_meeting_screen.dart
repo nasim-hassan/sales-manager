@@ -292,7 +292,7 @@ class _ScheduleMeetingScreenState extends State<ScheduleMeetingScreen> {
         ),
         const SizedBox(height: AppTheme.spacingSm),
         DropdownButtonFormField<int>(
-          value: _durationMinutes,
+          initialValue: _durationMinutes,
           decoration: InputDecoration(
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             contentPadding: const EdgeInsets.symmetric(
@@ -303,7 +303,7 @@ class _ScheduleMeetingScreenState extends State<ScheduleMeetingScreen> {
           items: [30, 60, 90, 120, 180].map((duration) {
             return DropdownMenuItem(
               value: duration,
-              child: Text('${duration} minutes'),
+              child: Text('$duration minutes'),
             );
           }).toList(),
           onChanged: (value) {

@@ -173,7 +173,7 @@ class _SendProposalScreenState extends State<SendProposalScreen> {
                   ),
                   const SizedBox(height: AppTheme.spacingSm),
                   DropdownButtonFormField<String>(
-                    value: _selectedStatus,
+                    initialValue: _selectedStatus,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),

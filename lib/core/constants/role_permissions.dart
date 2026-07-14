@@ -98,8 +98,9 @@ class RolePermissions {
 
     // Manager can edit salespeople they manage (reporting_manager = current user)
     if (currentUserRole == 'manager' &&
-        targetUserReportingManager == currentUserId)
+        targetUserReportingManager == currentUserId) {
       return true;
+    }
 
     return false;
   }

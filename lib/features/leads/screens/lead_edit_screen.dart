@@ -342,7 +342,7 @@ class _LeadEditScreenState extends State<LeadEditScreen> {
                     }
 
                     return DropdownButtonFormField<String>(
-                      value: _selectedAssignedTo,
+                      initialValue: _selectedAssignedTo,
                       decoration: InputDecoration(
                         labelText: 'Assign To',
                         border: OutlineInputBorder(

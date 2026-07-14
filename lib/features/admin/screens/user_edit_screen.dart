@@ -377,7 +377,7 @@ class _UserEditScreenState extends State<UserEditScreen> {
                     }
 
                     return DropdownButtonFormField<String>(
-                      value: _selectedReportingManager,
+                      initialValue: _selectedReportingManager,
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.person_outline),
                         hintText: 'Select a manager',

@@ -202,7 +202,7 @@ class ReportsScreen extends StatelessWidget {
                       ],
                     ),
                   );
-                }).toList(),
+                }),
               ],
             ),
           ),
@@ -269,7 +269,7 @@ class ReportsScreen extends StatelessWidget {
                       ],
                     ),
                   );
-                }).toList(),
+                }),
               ],
             ),
           ),

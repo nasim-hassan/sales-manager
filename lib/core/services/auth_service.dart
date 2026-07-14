@@ -176,7 +176,7 @@ class AuthService {
         }
       }
 
-      throw e; // Rethrow original error to be caught by provider
+      rethrow; // Rethrow original error to be caught by provider
     }
   }
 
