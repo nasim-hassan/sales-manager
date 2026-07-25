@@ -1,151 +1,242 @@
+<div align="center">
+
 # Sales Manager
 
-Sales Manager is a professional CRM and sales operations application built with Flutter and Supabase. It is designed to streamline lead management, customer lifecycle tracking, proposal generation, meeting coordination, and administrative oversight through a role-based access model.
+**A web-based customer management and sales automation platform for SMEs.**
 
-## Summary
+Built with Flutter and Supabase to unify leads, customers, proposals, meetings, and team performance in a single, role-aware workspace.
 
-This project delivers a modern mobile-first experience with a clean architecture and modular feature set. Key capabilities include:
+[![Flutter](https://img.shields.io/badge/Flutter-Web-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-^3.9.2-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![Supabase](https://img.shields.io/badge/Backend-Supabase-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)
+[![Status](https://img.shields.io/badge/Status-Completed-success)](#)
+[![License](https://img.shields.io/badge/License-Not%20Specified-lightgrey)](#license)
 
-- Secure authentication with role-based access control
-- Lead pipeline management, stage tracking, and funnel visualization
-- Customer database management with ownership and visibility rules
-- Proposal creation, editing, and tracking
-- Meeting scheduling and calendar integration
-- Dashboard analytics and report generation
-- Notification center and real-time updates
-- Admin and manager user management workflows
-- Offline-friendly caching and connectivity awareness
+[Features](#features) · [Screenshots](#screenshots) · [Tech Stack](#tech-stack) · [Architecture](#architecture) · [Getting Started](#getting-started) · [Roles & Permissions](#roles--permissions) · [Roadmap](#roadmap)
 
-## Technology Stack
+</div>
 
-- Flutter
-- Dart
-- Supabase (Auth, Database, Storage)
-- Provider for state management
-- `sqflite` for local data persistence
-- `shared_preferences` for local cache
-- `connectivity_plus` for network state
-- `http`, `intl`, `uuid`, `file_picker`, `fl_chart`
+---
+
+## Overview
+
+Small and medium businesses often manage customers and sales through a patchwork of spreadsheets, messaging apps, and personal notes. This makes it easy to lose track of leads, miss follow-ups, and lose visibility into what the sales team is actually doing.
+
+**Sales Manager** replaces that patchwork with one centralized platform. It gives sales teams a structured pipeline to move leads from first contact to closed deal, gives managers real-time visibility into team performance, and gives admins full control over users, roles, and data — all backed by Supabase's real-time database and authentication.
+
+## Features
+
+### Authentication & Access
+- Secure email/password authentication with a password-recovery flow
+- Role-based access control across three roles: **Admin**, **Manager**, **Sales Person**
+- Automatic auth gating on all protected routes
+
+### Lead Management
+- Create, update, and track leads through every pipeline stage (New → Contacted → Qualified → Proposal → Negotiation → Closed Won/Lost)
+- Search and filter leads by stage
+- Deal value tracking per lead
+- Role-based visibility and lead ownership
+
+### Customer Management
+- Centralized customer records tied to lead history
+- Role-specific visibility and ownership rules
+- Full customer lifecycle support
+
+### Proposal Management
+- Create, send, and track proposals (Draft → Sent → Accepted)
+- Proposal value tracking per client
+- Full historical record of business proposals
+
+### Meeting & Calendar Management
+- Schedule and search meetings, linked directly to leads and customers
+- Status tracking (scheduled / completed)
+- Month-view calendar with per-day agendas
+
+### Dashboard & Reporting
+- Real-time KPI overview: lead volume, stage distribution, team activity
+- Exportable stage-by-stage conversion reports
+- Visual analytics for faster business decisions
+
+### Notifications
+- Real-time alerts for lead updates, meetings, and proposals
+- Filterable by type (Unread / Leads / Proposals)
+- Keeps every role in sync without manual refreshes
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><b>Login</b></td>
+    <td align="center"><b>Dashboard</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/login.jpg" width="280"/></td>
+    <td><img src="docs/screenshots/dashboard.jpg" width="280"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Lead Management</b></td>
+    <td align="center"><b>Reports & Analytics</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/lead-management.jpg" width="280"/></td>
+    <td><img src="docs/screenshots/reports.jpg" width="280"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Meeting Management</b></td>
+    <td align="center"><b>Proposal Management</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/meeting-management.jpg" width="280"/></td>
+    <td><img src="docs/screenshots/proposal-management.jpg" width="280"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Calendar</b></td>
+    <td align="center"><b>Notifications</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/calendar.jpg" width="280"/></td>
+    <td><img src="docs/screenshots/notifications.jpg" width="280"/></td>
+  </tr>
+</table>
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Flutter (Web) |
+| Language | Dart `^3.9.2` |
+| Backend | Supabase — Auth, Database, Storage, Realtime |
+| State Management | Provider / `ChangeNotifier` |
+| Local Persistence | `sqflite`, `shared_preferences` |
+| Connectivity | `connectivity_plus` |
+| Charts | `fl_chart` |
+| Utilities | `http`, `intl`, `uuid`, `file_picker` |
 
 ## Architecture
 
-The application follows a feature-driven structure with core shared services.
+The application follows a feature-driven structure with shared core services.
 
-- `lib/main.dart` — application entrypoint, provider composition, auth gate
-- `lib/core/` — shared theme, constants, models, services
-- `lib/features/` — feature modules grouped by domain
+```
+lib/
+├── main.dart              # App entrypoint, provider composition, auth gate
+├── core/                  # Shared theme, constants, models, services
+│   ├── services/
+│   │   ├── auth_service.dart        # Authentication & session handling
+│   │   ├── supabase_service.dart    # Centralized Supabase client
+│   │   └── sync_service.dart        # Connectivity + local caching
+│   └── ...
+└── features/               # Feature modules grouped by domain
+    ├── auth/
+    ├── dashboard/
+    ├── leads/
+    ├── customers/
+    ├── calendar/
+    ├── reports/
+    └── admin/
+```
 
-### Core Services
+**Core services**
 
-- `AuthService` — authentication, session handling, Supabase auth integration
-- `SupabaseService` — centralized Supabase client and reusable database access
-- `SyncService` — connectivity monitoring and local caching support
+| Service | Responsibility |
+|---|---|
+| `AuthService` | Authentication, session handling, Supabase auth integration |
+| `SupabaseService` | Centralized Supabase client and reusable database access |
+| `SyncService` | Connectivity monitoring and local caching support |
 
-## Application Features
+## Roles & Permissions
 
-### Authentication
-- Email/password login
-- Password recovery workflow
-- Automatic auth gating for protected views
-
-### Role-Based Access
-- `admin` — complete application and user management
-- `manager` — team supervision, lead assignment, reporting
-- `salesperson` — direct lead management and customer interaction
-
-### Leads
-- Create, update, and delete leads
-- Track pipeline stage progress
-- Role-based visibility for leads and assignments
-- Automatic conversion of won opportunities
-
-### Customers
-- Add and maintain customer records
-- Role-specific visibility and ownership rules
-- Customer lifecycle support tied to leads
-
-### Proposals & Meetings
-- Proposal creation and editing flows
-- Meeting scheduling and modification
-- Integration with lead and customer workflows
-
-### Dashboard & Reporting
-- Visual lead activity charts
-- Lead-stage distribution views
-- Notification center and quick access actions
-- Report overview screens
+| Role | Access |
+|---|---|
+| **Admin** | Full system control, user management, all data visibility |
+| **Manager** | Team supervision, lead assignment, reporting across the team |
+| **Sales Person** | Direct lead management, customer interaction, own pipeline |
 
 ## Getting Started
 
 ### Prerequisites
 
 - Flutter SDK compatible with Dart `^3.9.2`
-- A configured Supabase project
-- Platform-specific tooling for iOS, Android, macOS, or web
+- A configured [Supabase](https://supabase.com) project
+- Platform tooling for your target (Web, Android, iOS, macOS)
 
-### Install Dependencies
+### 1. Clone & install dependencies
 
 ```bash
+git clone https://github.com/nasim-hassan/sales-manager.git
+cd sales-manager
 flutter pub get
 ```
 
-### Supabase Configuration
+### 2. Configure Supabase
 
-Update `lib/core/constants/app_constants.dart` with your Supabase environment values:
+Update `lib/core/constants/app_constants.dart` with your project's values:
 
-- `supabaseUrl`
-- `supabaseKey`
+```dart
+const supabaseUrl = 'YOUR_SUPABASE_URL';
+const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+```
 
-Confirm the required database tables exist in Supabase:
+Ensure the following tables exist in your Supabase project:
 
-- `users`
-- `leads`
-- `proposals`
-- `customers`
-- `meetings`
-- `notifications`
-- `deals`
+`users` · `leads` · `customers` · `proposals` · `meetings` · `notifications` · `deals`
 
-> For production deployments, avoid committing Supabase keys to source control. Use environment variables or secure runtime configuration.
+> **Security note:** Never commit real Supabase keys to source control. Use environment variables or a secure runtime configuration for production deployments.
 
-### Launch the Application
+### 3. Run the app
 
 ```bash
 flutter run
 ```
 
-Or run on a specific device:
+Or target a specific platform:
 
 ```bash
-flutter run -d ios
+flutter run -d chrome    # Web
 flutter run -d android
+flutter run -d ios
 flutter run -d macos
-flutter run -d web
 ```
 
 ## Repository Layout
 
-- `lib/core/` — shared theme, constants, models, services
-- `lib/features/auth/` — authentication screens and providers
-- `lib/features/dashboard/` — dashboard, notifications, and analytics
-- `lib/features/leads/` — leads, proposals, and meetings
-- `lib/features/customers/` — customer management
-- `lib/features/calendar/` — calendar screen and provider
-- `lib/features/reports/` — reporting screens and provider
-- `lib/features/admin/` — admin and user management interfaces
+| Path | Description |
+|---|---|
+| `lib/core/` | Shared theme, constants, models, services |
+| `lib/features/auth/` | Authentication screens and providers |
+| `lib/features/dashboard/` | Dashboard, notifications, and analytics |
+| `lib/features/leads/` | Leads, proposals, and meetings |
+| `lib/features/customers/` | Customer management |
+| `lib/features/calendar/` | Calendar screen and provider |
+| `lib/features/reports/` | Reporting screens and provider |
+| `lib/features/admin/` | Admin and user management interfaces |
 
-## Development Notes
+## Roadmap
 
-- Uses `provider` and `ChangeNotifier` for application state
-- Dashboard charts are implemented using `fl_chart`
-- `SyncService` supports local caching and connectivity-aware behavior
+- [ ] Native mobile notifications (push)
+- [ ] AI-assisted lead scoring and sales predictions
+- [ ] Offline-first mode with full sync on reconnect
+- [ ] PDF/Excel export for reports
 
-## Contribution Guidelines
+## Contributing
 
-1. Fork the repository.
-2. Create a topic branch for your changes.
-3. Open a pull request describing the improvements.
+Contributions are welcome.
+
+1. Fork the repository
+2. Create a topic branch for your changes
+3. Commit your changes with clear messages
+4. Open a pull request describing the improvements
 
 ## License
 
-This repository does not include a license. Add a license file if you intend to publish or distribute this project.
+This repository does not currently include a license. If you intend to publish or distribute this project, add a `LICENSE` file (e.g. MIT) before doing so.
+
+## Authors
+
+- **Nasim** — 223071050
+- **Lamia** — 223071040
+
+---
+
+<div align="center">
+Built with Flutter + Supabase
+</div>
